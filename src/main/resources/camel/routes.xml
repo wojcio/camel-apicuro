@@ -3,18 +3,47 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://camel.apache.org/schema/spring https://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <route id="produce-to-kafka">
-        <from uri="timer:tick?period=5000"/>
+    <!-- Producer: Send valid UserEvent -->
+    <route id="produce-valid-event">
+        <from uri="timer:valid?period=10000"/>
         <setBody>
-            <constant>{"message": "Hello from Camel XML DSL and Apicurio Registry!"}</constant>
+            <constant>{
+                "username": "john_doe",
+                "email": "john@example.com",
+                "action": "LOGIN",
+                "timestamp": 123456789
+            }</constant>
         </setBody>
-        <log message="Producing message to Kafka: ${body}"/>
-        <to uri="kafka:my-topic?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.avro.AvroKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;additionalProperties.apicurio.registry.auto-register=true"/>
+        <log message="Producing VALID UserEvent: ${body}"/>
+        <to uri="kafka:{{kafka.topic}}?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;additionalProperties.apicurio.registry.auto-register=true"/>
     </route>
 
-    <route id="consume-from-kafka">
-        <from uri="kafka:my-topic?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.avro.AvroKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}"/>
-        <log message="Consumed message from Kafka: ${body}"/>
+    <!-- Producer: Send INVALID UserEvent (missing required field 'action') -->
+    <route id="produce-invalid-event">
+        <from uri="timer:invalid?period=20000"/>
+        <setBody>
+            <constant>{
+                "username": "bad_user",
+                "email": "not-an-email",
+                "timestamp": 0
+            }</constant>
+        </setBody>
+        <log message="Attempting to produce INVALID UserEvent: ${body}"/>
+        <!-- This should fail at the serializer level if validation is strict -->
+        <doTry>
+            <to uri="kafka:{{kafka.topic}}?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;additionalProperties.apicurio.registry.auto-register=true"/>
+            <doCatch>
+                <exception>java.lang.Exception</exception>
+                <log message="Caught expected validation error: ${exception.message}"/>
+            </doCatch>
+        </doTry>
+    </route>
+
+    <!-- Consumer: Consume and Log -->
+    <route id="consume-user-events">
+        <from uri="kafka:{{kafka.topic}}?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}"/>
+        <log message="Consumed UserEvent: ${body}"/>
+        <!-- Further processing could happen here, e.g., unmarshal to POJO -->
     </route>
 
 </routes>

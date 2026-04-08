@@ -1,10 +1,11 @@
 # Camel XML DSL and Apicurio Registry Setup
 
-This project demonstrates how to set up an Apache Camel application using XML DSL that integrates with **Apicurio Registry** for schema management (specifically for Kafka serialization/deserialization with Avro).
+This project demonstrates how to set up an Apache Camel application using XML DSL that integrates with **Apicurio Registry** for schema management (specifically for Kafka serialization/deserialization with **JSON Schema**).
 
 ## Features
 - **Camel XML DSL**: Routes are defined in `src/main/resources/camel/routes.xml`.
-- **Apicurio Integration**: Uses Apicurio's Avro Kafka SerDes to interact with a schema registry.
+- **JSON Schema Validation**: Uses Apicurio's JSON Schema Kafka SerDes to validate messages against a schema (`src/main/resources/schemas/user-event.json`).
+- **Error Handling**: Demonstrates catching validation errors when producing malformed data.
 - **Configurable**: Environment-specific settings are in `src/main/resources/application.properties`.
 
 ## Prerequisites

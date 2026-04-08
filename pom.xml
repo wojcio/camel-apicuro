@@ -46,11 +46,17 @@
             <artifactId>camel-kafka</artifactId>
         </dependency>
 
-        <!-- Apicurio Registry SerDes for Avro -->
+        <!-- Apicurio Registry SerDes for JSON Schema -->
         <dependency>
             <groupId>io.apicurio</groupId>
-            <artifactId>apicurio-registry-serdes-avro-kafka</artifactId>
+            <artifactId>apicurio-registry-serdes-jsonschema-kafka</artifactId>
             <version>${apicurio.version}</version>
+        </dependency>
+
+        <!-- Jackson for JSON handling in Camel -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jackson</artifactId>
         </dependency>
 
         <!-- Logging -->
