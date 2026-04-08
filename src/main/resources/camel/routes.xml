@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes xmlns="http://camel.apache.org/schema/spring"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://camel.apache.org/schema/spring https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <route id="produce-to-kafka">
+        <from uri="timer:tick?period=5000"/>
+        <setBody>
+            <constant>{"message": "Hello from Camel XML DSL and Apicurio Registry!"}</constant>
+        </setBody>
+        <log message="Producing message to Kafka: ${body}"/>
+        <to uri="kafka:my-topic?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.avro.AvroKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;additionalProperties.apicurio.registry.auto-register=true"/>
+    </route>
+
+    <route id="consume-from-kafka">
+        <from uri="kafka:my-topic?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.avro.AvroKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}"/>
+        <log message="Consumed message from Kafka: ${body}"/>
+    </route>
+
+</routes>
