@@ -3,47 +3,243 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://camel.apache.org/schema/spring https://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <!-- Producer: Send valid UserEvent -->
-    <route id="produce-valid-event">
-        <from uri="timer:valid?period=10000"/>
+    <!-- =========================================
+         BOOKSTORE EVENT ROUTES
+         Demonstrates Camel EIP patterns with Apicurio Registry
+         ========================================= -->
+
+    <!-- Route 1: Produce Book Added Events -->
+    <route id="produce-book-added">
+        <from uri="timer:book-added?period=15000&amp;repeatCount=5"/>
         <setBody>
             <constant>{
-                "username": "john_doe",
-                "email": "john@example.com",
-                "action": "LOGIN",
-                "timestamp": 123456789
+                "eventId": "${date:now:yyyyMMddHHmmssSSS}-BOOK-001",
+                "eventType": "BOOK_ADDED",
+                "timestamp": ${date:now:yyyy-MM-dd'T'HH:mm:ss.SSSZ},
+                "book": {
+                    "isbn": "9781234567890",
+                    "title": "The Art of Java Programming",
+                    "author": "Jane Developer",
+                    "genre": "Technology",
+                    "price": 49.99,
+                    "stock": 100,
+                    "publishedDate": "2024-01-15"
+                }
             }</constant>
         </setBody>
-        <log message="Producing VALID UserEvent: ${body}"/>
-        <to uri="kafka:{{kafka.topic}}?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;additionalProperties.apicurio.registry.auto-register=true"/>
+        <log message="Producing BOOK_ADDED event: ${body}"/>
+        <to uri="kafka:{{kafka.topic.books}}?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;additionalProperties.apicurio.registry.auto-register=true"/>
     </route>
 
-    <!-- Producer: Send INVALID UserEvent (missing required field 'action') -->
-    <route id="produce-invalid-event">
-        <from uri="timer:invalid?period=20000"/>
+    <!-- Route 2: Produce Order Created Events -->
+    <route id="produce-order-created">
+        <from uri="timer:order-created?period=20000&amp;repeatCount=3"/>
         <setBody>
             <constant>{
-                "username": "bad_user",
-                "email": "not-an-email",
-                "timestamp": 0
+                "eventId": "${date:now:yyyyMMddHHmmssSSS}-ORDER-001",
+                "eventType": "ORDER_CREATED",
+                "timestamp": ${date:now:yyyy-MM-dd'T'HH:mm:ss.SSSZ},
+                "order": {
+                    "orderId": "ORD-${date:now:yyyyMMddHHmmssSSS}",
+                    "customerId": "CUST-12345",
+                    "items": [
+                        {
+                            "isbn": "9781234567890",
+                            "quantity": 2,
+                            "unitPrice": 49.99
+                        },
+                        {
+                            "isbn": "9780987654321",
+                            "quantity": 1,
+                            "unitPrice": 29.99
+                        }
+                    ],
+                    "subtotal": 129.97,
+                    "tax": 10.40,
+                    "shippingCost": 5.99,
+                    "totalAmount": 146.36,
+                    "shippingAddress": {
+                        "street": "123 Main Street",
+                        "city": "New York",
+                        "state": "NY",
+                        "zipCode": "10001",
+                        "country": "US"
+                    }
+                }
             }</constant>
         </setBody>
-        <log message="Attempting to produce INVALID UserEvent: ${body}"/>
-        <!-- This should fail at the serializer level if validation is strict -->
-        <doTry>
-            <to uri="kafka:{{kafka.topic}}?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;additionalProperties.apicurio.registry.auto-register=true"/>
-            <doCatch>
-                <exception>java.lang.Exception</exception>
-                <log message="Caught expected validation error: ${exception.message}"/>
-            </doCatch>
-        </doTry>
+        <log message="Producing ORDER_CREATED event: ${body}"/>
+        <to uri="kafka:{{kafka.topic.orders}}?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;additionalProperties.apicurio.registry.auto-register=true"/>
     </route>
 
-    <!-- Consumer: Consume and Log -->
-    <route id="consume-user-events">
-        <from uri="kafka:{{kafka.topic}}?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}"/>
-        <log message="Consumed UserEvent: ${body}"/>
-        <!-- Further processing could happen here, e.g., unmarshal to POJO -->
+    <!-- Route 3: Consume and Process Orders (EIP Patterns) -->
+    <route id="process-orders">
+        <from uri="kafka:{{kafka.topic.orders}}?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;autoOffsetReset=earliest"/>
+
+        <!-- Unmarshal JSON to POJO -->
+        <unmarshal>
+            <json library="Jackson" targetClass="com.example.bookstore.models.BookstoreEvent"/>
+        </unmarshal>
+
+        <!-- Filter: Only process ORDER_CREATED events -->
+        <filter>
+            <method bean="orderFilter" method="isOrderCreated"/>
+            <log message="Processing ORDER_CREATED event: ${body.eventId}"/>
+
+            <!-- EIP: Split - process each order item individually -->
+            <split>
+                <simple>${body.payload.items}</simple>
+
+                <!-- EIP: Enrich - add book details from catalog -->
+                <enrich uri="direct:get-book-details" strategyRef="itemAggregationStrategy"/>
+
+                <!-- EIP: Filter - only process in-stock items -->
+                <filter>
+                    <method bean="inventoryFilter" method="isInStock"/>
+                    <log message="Item ${body.isbn} is in stock (qty: ${body.stock})"/>
+
+                    <!-- EIP: Choice - route based on price -->
+                    <choice>
+                        <when>
+                            <simple>${body.price} &gt; 50</simple>
+                            <log message="High-value item: ${body.title} ($${body.price})"/>
+                        </when>
+                        <otherwise>
+                            <log message="Standard item: ${body.title} ($${body.price})"/>
+                        </otherwise>
+                    </choice>
+
+                </filter>
+            </split>
+
+            <!-- EIP: Aggregate - collect all items back -->
+            <aggregate strategyRef="orderAggregationStrategy" completionSize="2">
+                <correlationExpression>
+                    <simple>${body.payload.orderId}</simple>
+                </correlationExpression>
+                <log message="Completed processing order: ${body.payload.orderId}"/>
+            </aggregate>
+
+        </filter>
+
+        <!-- Dead Letter Channel for error handling -->
+        <onException>
+            <exception>java.lang.Exception</exception>
+            <handled><constant>true</constant></handled>
+            <log message="Error processing order: ${exception.message}"/>
+            <to uri="kafka:{{kafka.topic.dlq}}?brokers={{kafka.brokers}}&amp;valueSerializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaSerializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}"/>
+        </onException>
+
+    </route>
+
+    <!-- Route 4: Get Book Details from Catalog (Direct Endpoint) -->
+    <route id="get-book-details">
+        <from uri="direct:get-book-details"/>
+
+        <!-- Extract ISBN from order item -->
+        <setHeader name="isbn">
+            <simple>${body.isbn}</simple>
+        </setHeader>
+
+        <!-- Simulate looking up book details (in real scenario, would query database) -->
+        <choice>
+            <when>
+                <simple>${header.isbn} == '9781234567890'</simple>
+                <setBody>
+                    <constant>{
+                        "isbn": "9781234567890",
+                        "title": "The Art of Java Programming",
+                        "author": "Jane Developer",
+                        "genre": "Technology",
+                        "price": 49.99,
+                        "stock": 100
+                    }</constant>
+                </setBody>
+            </when>
+            <when>
+                <simple>${header.isbn} == '9780987654321'</simple>
+                <setBody>
+                    <constant>{
+                        "isbn": "9780987654321",
+                        "title": "Python for Data Science",
+                        "author": "John Analyst",
+                        "genre": "Technology",
+                        "price": 29.99,
+                        "stock": 50
+                    }</constant>
+                </setBody>
+            </when>
+            <otherwise>
+                <setBody>
+                    <constant>{
+                        "isbn": "${header.isbn}",
+                        "title": "Unknown Book",
+                        "author": "Unknown",
+                        "genre": "Unknown",
+                        "price": 0.0,
+                        "stock": 0
+                    }</constant>
+                </setBody>
+            </otherwise>
+        </choice>
+
+        <log message="Book details for ${header.isbn}: ${body}"/>
+    </route>
+
+    <!-- Route 5: Process Shipments -->
+    <route id="process-shipments">
+        <from uri="kafka:{{kafka.topic.shipments}}?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;autoOffsetReset=earliest"/>
+
+        <unmarshal>
+            <json library="Jackson" targetClass="com.example.bookstore.models.BookstoreEvent"/>
+        </unmarshal>
+
+        <filter>
+            <method bean="shipmentFilter" method="isShipmentCreated"/>
+
+            <!-- EIP: Transform - format shipping label -->
+            <transform>
+                <method bean="shipmentFormatter"/>
+            </transform>
+
+            <!-- EIP: Filter - different handling for expedited vs standard -->
+            <choice>
+                <when>
+                    <method bean="shipmentFilter" method="isExpedited"/>
+                    <log message="EXPEDITED SHIPMENT: ${body} - Priority handling required!"/>
+                    <to uri="kafka:{{kafka.topic.expedited}}?brokers={{kafka.brokers}}"/>
+                </when>
+                <otherwise>
+                    <log message="STANDARD SHIPMENT: ${body}"/>
+                </otherwise>
+            </choice>
+
+        </filter>
+
+    </route>
+
+    <!-- Route 6: Consume All Events and Report Statistics -->
+    <route id="consume-and-report">
+        <from uri="kafka:{{kafka.topic.books}},{{kafka.topic.orders}},{{kafka.topic.shipments}}?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;autoOffsetReset=earliest&amp;consumerConfig.group.id=bookstore-reporter"/>
+
+        <unmarshal>
+            <json library="Jackson" targetClass="com.example.bookstore.models.BookstoreEvent"/>
+        </unmarshal>
+
+        <!-- EIP: Aggregate - collect events over time window -->
+        <aggregate strategyRef="statisticsAggregationStrategy" completionTimeout="60000">
+            <correlationExpression>
+                <constant>true</constant>
+            </correlationExpression>
+
+            <log message="=== BOOKSTORE STATISTICS ==="/>
+            <log message="Books Added: ${body.booksAdded}"/>
+            <log message="Orders Processed: ${body.ordersProcessed}"/>
+            <log message="Shipments Created: ${body.shipmentsCreated}"/>
+            <log message="Total Revenue: $${body.totalRevenue}"/>
+
+        </aggregate>
+
     </route>
 
 </routes>
