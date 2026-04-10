@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes xmlns="http://camel.apache.org/schema/spring"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://camel.apache.org/schema/spring https://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <!-- =========================================
+         BOOKSTORE REST API ROUTES
+         Provides HTTP endpoints for managing books and orders
+         ========================================= -->
+
+    <!-- REST API Configuration -->
+    <restConfiguration component="netty-http" host="0.0.0.0" port="{{http.port}}" bindingMode="json">
+        <dataFormatProperty key="prettyPrint" value="true"/>
+        <dataFormatProperty key="includeNull" value="false"/>
+    </restConfiguration>
+
+    <!-- =========================================
+         BOOK ENDPOINTS
+         ========================================= -->
+
+    <rest path="/api/books" description="Book management API">
+        <!-- Get all books -->
+        <get uri="" produces="application/json" description="Get all books">
+            <to uri="sql:SELECT isbn, title, author, genre, price, stock FROM books ORDER BY title?dataSource=sqliteDataSource"/>
+        </get>
+
+        <!-- Get book by ISBN -->
+        <get uri="/{isbn}" produces="application/json" description="Get a book by ISBN">
+            <to uri="sql:SELECT isbn, title, author, genre, price, stock FROM books WHERE isbn = :#isbn?dataSource=sqliteDataSource&amp;outputType=SELECT_ONE"/>
+        </get>
+
+        <!-- Add a new book -->
+        <post uri="" consumes="application/json" produces="application/json" description="Add a new book">
+            <to uri="direct:add-book"/>
+        </post>
+
+        <!-- Update book stock -->
+        <put uri="/{isbn}/stock" consumes="application/json" produces="application/json" description="Update book stock">
+            <to uri="direct:update-stock"/>
+        </put>
+    </rest>
+
+    <!-- =========================================
+         ORDER ENDPOINTS
+         ========================================= -->
+
+    <rest path="/api/orders" description="Order management API">
+        <!-- Get all orders -->
+        <get uri="" produces="application/json" description="Get all orders">
+            <to uri="sql:SELECT order_id, customer_id, order_date, subtotal, tax, shipping_cost, total_amount FROM orders ORDER BY order_date DESC?dataSource=sqliteDataSource"/>
+        </get>
+
+        <!-- Get order by ID -->
+        <get uri="/{orderId}" produces="application/json" description="Get an order by ID">
+            <to uri="sql:SELECT order_id, customer_id, order_date, subtotal, tax, shipping_cost, total_amount FROM orders WHERE order_id = :#orderId?dataSource=sqliteDataSource&amp;outputType=SELECT_ONE"/>
+        </get>
+
+        <!-- Get order items -->
+        <get uri="/{orderId}/items" produces="application/json" description="Get order items">
+            <to uri="sql:SELECT oi.id, oi.order_id, oi.isbn, b.title, oi.quantity, oi.unit_price FROM order_items oi JOIN books b ON oi.isbn = b.isbn WHERE oi.order_id = :#orderId?dataSource=sqliteDataSource"/>
+        </get>
+
+        <!-- Create a new order -->
+        <post uri="" consumes="application/json" produces="application/json" description="Create a new order">
+            <to uri="direct:create-order"/>
+        </post>
+    </rest>
+
+    <!-- =========================================
+         DIRECT ROUTES FOR API OPERATIONS
+         ========================================= -->
+
+    <!-- Add a new book to database -->
+    <route id="add-book">
+        <from uri="direct:add-book"/>
+        
+        <!-- Unmarshal JSON to Book POJO -->
+        <unmarshal>
+            <json library="Jackson" targetClass="com.example.bookstore.models.Book"/>
+        </unmarshal>
+        
+        <!-- Insert book into database -->
+        <to uri="sql:INSERT INTO books (isbn, title, author, genre, price, stock, published_date) VALUES (:#{body.isbn}, :#{body.title}, :#{body.author}, :#{body.genre}, :#{body.price}, :#{body.stock}, :#{body.publishedDate})?dataSource=sqliteDataSource"/>
+        
+        <!-- Return success response -->
+        <setHeader name="CamelHttpResponseCode">
+            <constant>201</constant>
+        </setHeader>
+        <setBody>
+            <simple>{"message": "Book added successfully", "isbn": "${body.isbn}"}</simple>
+        </setBody>
+    </route>
+
+    <!-- Update book stock -->
+    <route id="update-stock">
+        <from uri="direct:update-stock"/>
+        
+        <!-- Extract ISBN from path -->
+        <setHeader name="isbn">
+            <simple>${header.isbn}</simple>
+        </setHeader>
+        
+        <!-- Unmarshal JSON body for quantity -->
+        <unmarshal>
+            <json library="Jackson" targetClass="com.example.bookstore.models.Book"/>
+        </unmarshal>
+        
+        <!-- Update stock in database -->
+        <setBody>
+            <simple>${body.stock}</simple>
+        </setBody>
+        
+        <!-- Check if book exists and update stock -->
+        <to uri="sql:UPDATE books SET stock = stock + :#stock WHERE isbn = :#isbn?dataSource=sqliteDataSource"/>
+        
+        <!-- Check if update was successful -->
+        <choice>
+            <when>
+                <simple>${body} &gt; 0</simple>
+                <setHeader name="CamelHttpResponseCode">
+                    <constant>200</constant>
+                </setHeader>
+                <to uri="sql:SELECT isbn, title, author, genre, price, stock FROM books WHERE isbn = :#isbn?dataSource=sqliteDataSource&amp;outputType=SELECT_ONE"/>
+            </when>
+            <otherwise>
+                <setHeader name="CamelHttpResponseCode">
+                    <constant>404</constant>
+                </setHeader>
+                <setBody>
+                    <simple>{"error": "Book not found or invalid stock update"}</simple>
+                </setBody>
+            </otherwise>
+        </choice>
+    </route>
+
+    <!-- Create a new order -->
+    <route id="create-order">
+        <from uri="direct:create-order"/>
+        
+        <!-- Unmarshal JSON to Order POJO -->
+        <unmarshal>
+            <json library="Jackson" targetClass="com.example.bookstore.models.Order"/>
+        </unmarshal>
+        
+        <!-- Validate order -->
+        <choice>
+            <when>
+                <method bean="orderValidator" method="isValid"/>
+                
+                <!-- Insert order into database -->
+                <to uri="sql:INSERT INTO orders (order_id, customer_id, subtotal, tax, shipping_cost, total_amount, shipping_address) VALUES (:#{body.orderId}, :#{body.customerId}, :#{body.subtotal}, :#{body.tax}, :#{body.shippingCost}, :#{body.totalAmount}, :#{body.shippingAddress})?dataSource=sqliteDataSource"/>
+                
+                <!-- Insert order items -->
+                <split>
+                    <simple>${body.items}</simple>
+                    <to uri="sql:INSERT INTO order_items (order_id, isbn, quantity, unit_price) VALUES (:#{body.orderId}, :#{body.isbn}, :#{body.quantity}, :#{body.unitPrice})?dataSource=sqliteDataSource"/>
+                </split>
+                
+                <!-- Return success response -->
+                <setHeader name="CamelHttpResponseCode">
+                    <constant>201</constant>
+                </setHeader>
+                <setBody>
+                    <simple>{"message": "Order created successfully", "orderId": "${body.orderId}", "totalAmount": ${body.totalAmount}}</simple>
+                </setBody>
+                
+            </when>
+            <otherwise>
+                <setHeader name="CamelHttpResponseCode">
+                    <constant>400</constant>
+                </setHeader>
+                <setBody>
+                    <simple>{"error": "Invalid order: must have at least one item"}</simple>
+                </setBody>
+            </otherwise>
+        </choice>
+    </route>
+
+</routes>

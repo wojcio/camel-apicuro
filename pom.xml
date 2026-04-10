@@ -67,6 +67,12 @@
             <artifactId>camel-sql</artifactId>
         </dependency>
 
+        <!-- Camel Netty HTTP for REST API -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-netty-http</artifactId>
+        </dependency>
+
         <!-- Jackson for JSON handling in Camel -->
         <dependency>
             <groupId>org.apache.camel</groupId>
