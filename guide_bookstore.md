@@ -1,6 +1,6 @@
 # Bookstore Event Streaming with Apache Camel
 
-This guide explains the bookstore event streaming implementation using Apache Camel XML DSL and Apicurio Registry for schema management.
+This guide explains the bookstore event streaming implementation using Apache Camel XML DSL, integrated with Apicurio Registry for schema management, SQLite for persistent data storage, and Netty HTTP for REST API endpoints.
 
 ## Overview
 
@@ -9,7 +9,8 @@ The bookstore application demonstrates real-world event streaming patterns inclu
 - JSON Schema validation with Apicurio Registry
 - Apache Camel EIP (Enterprise Integration Patterns)
 - POJO marshalling/unmarshalling with Jackson
-- Error handling with Dead Letter Channel
+- SQLite database integration for persistent data storage
+- REST API endpoints using Netty HTTP
 
 ## Event Types
 
@@ -107,13 +108,13 @@ Only process specific event types:
 
 ```xml
 <filter>
-    <method ref="orderFilter" method="isOrderCreated"/>
+    <method bean="orderFilter" method="isOrderCreated"/>
     <!-- Process only ORDER_CREATED events -->
 </filter>
 ```
 
 ### 3. Enrich Pattern
-Add book details from catalog to order items:
+Add book details from database to order items:
 
 ```xml
 <enrich uri="direct:get-book-details" strategyRef="itemAggregationStrategy"/>
@@ -158,6 +159,13 @@ The application uses Jackson for JSON serialization/deserialization:
 | `Customer` | Customer with shipping address |
 | `Shipment` | Shipping information |
 
+## Service Classes
+
+| Class | Purpose |
+|-------|---------|
+| `BookService` | Database operations (getBookByIsbn, getAllBooks, etc.) |
+| `OrderValidator` | Validates order objects before processing |
+
 ## Strategy Classes
 
 | Class | Purpose |
@@ -169,6 +177,54 @@ The application uses Jackson for JSON serialization/deserialization:
 | `ItemAggregationStrategy` | Combines items with book details |
 | `OrderAggregationStrategy` | Reassembles processed orders |
 | `StatisticsAggregationStrategy` | Collects metrics over time |
+
+## REST API Endpoints
+
+### Books
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/books` | Get all books |
+| GET | `/api/books/{isbn}` | Get book by ISBN |
+| POST | `/api/books` | Add new book |
+| PUT | `/api/books/{isbn}/stock` | Update stock |
+
+### Orders
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/orders` | Get all orders |
+| GET | `/api/orders/{orderId}` | Get order by ID |
+| GET | `/api/orders/{orderId}/items` | Get order items |
+| POST | `/api/orders` | Create new order |
+
+### API Examples
+
+```bash
+# Get all books
+curl http://localhost:8081/api/books
+
+# Add a new book
+curl -X POST http://localhost:8081/api/books \
+  -H "Content-Type: application/json" \
+  -d '{"isbn":"9781234567890","title":"New Book","author":"Author","genre":"Fiction","price":19.99,"stock":50}'
+
+# Get all orders
+curl http://localhost:8081/api/orders
+
+# Create a new order
+curl -X POST http://localhost:8081/api/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-NEW-001",
+    "customerId": "CUST-001",
+    "items": [{"isbn":"9781234567890","quantity":2,"unitPrice":49.99}],
+    "subtotal": 99.98,
+    "tax": 8.00,
+    "shippingCost": 5.99,
+    "totalAmount": 113.97
+  }'
+```
 
 ## Running the Application
 
@@ -185,6 +241,8 @@ This starts:
 ```bash
 mvn camel:run
 ```
+
+The REST API will be available on `http://localhost:8081`.
 
 ### 3. Monitor Events
 
@@ -206,6 +264,21 @@ podman exec -it kafka /opt/bitnami/kafka/bin/kafka-console-consumer.sh \
   --from-beginning
 ```
 
+## Database Schema
+
+The SQLite database is automatically initialized on startup with:
+
+### Tables
+- `books` - Book catalog (isbn, title, author, genre, price, stock)
+- `customers` - Customer information
+- `orders` - Order records
+- `order_items` - Individual items in orders
+
+### Sample Data
+- 15 books across different genres (Technology, Fiction, Science, History, Fantasy, Romance)
+- 5 sample customers
+- 3 sample orders with multiple items
+
 ## Key Improvements Over Original Example
 
 | Aspect | Original (UserEvent) | New (Bookstore) |
@@ -214,9 +287,9 @@ podman exec -it kafka /opt/bitnami/kafka/bin/kafka-console-consumer.sh \
 | Event Types | 1 type | 3 distinct event types |
 | Topics | 1 topic | 5 topics with routing |
 | EIP Patterns | None | Split, Filter, Enrich, Choice, Aggregate |
+| Database | None | SQLite with sample data |
+| REST API | None | Full CRUD for books and orders |
 | Error Handling | Basic try-catch | Dead Letter Channel |
-| Data Transformation | None | POJO marshalling/unmarshalling |
-| Business Logic | None | Inventory checks, price filtering |
 
 ## Architecture
 
@@ -246,6 +319,18 @@ podman exec -it kafka /opt/bitnami/kafka/bin/kafka-console-consumer.sh \
 │   Producer  │────▶│ bookstore-    │
 │ (Expedited) │     │ expedited    │
 └─────────────┘     └──────────────┘
+
+┌─────────────┐
+│   REST API  │
+│ (Netty)     │
+│ port 8081   │
+└─────────────┘
+         │
+         ▼
+    ┌──────────┐
+    │  SQLite  │
+    │ Database │
+    └──────────┘
 ```
 
 ## Next Steps
