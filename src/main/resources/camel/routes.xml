@@ -5,8 +5,22 @@
 
     <!-- =========================================
          BOOKSTORE EVENT ROUTES
-         Demonstrates Camel EIP patterns with Apicurio Registry
+         Demonstrates Camel EIP patterns with Apicurio Registry and SQLite
          ========================================= -->
+
+    <!-- Route 0: Initialize Database on Startup -->
+    <route id="init-database">
+        <from uri="timer:init?period=1000&amp;repeatCount=1"/>
+        <log message="Initializing database..."/>
+        
+        <!-- Execute schema creation -->
+        <to uri="sql:classpath:db/schema.sql?dataSource=sqliteDataSource"/>
+        
+        <!-- Execute sample data insertion -->
+        <to uri="sql:classpath:db/data.sql?dataSource=sqliteDataSource"/>
+        
+        <log message="Database initialized successfully!"/>
+    </route>
 
     <!-- Route 1: Produce Book Added Events -->
     <route id="produce-book-added">
@@ -90,7 +104,7 @@
             <split>
                 <simple>${body.payload.items}</simple>
 
-                <!-- EIP: Enrich - add book details from catalog -->
+                <!-- EIP: Enrich - add book details from database -->
                 <enrich uri="direct:get-book-details" strategyRef="itemAggregationStrategy"/>
 
                 <!-- EIP: Filter - only process in-stock items -->
@@ -132,7 +146,7 @@
 
     </route>
 
-    <!-- Route 4: Get Book Details from Catalog (Direct Endpoint) -->
+    <!-- Route 4: Get Book Details from Database (Direct Endpoint) -->
     <route id="get-book-details">
         <from uri="direct:get-book-details"/>
 
@@ -141,48 +155,10 @@
             <simple>${body.isbn}</simple>
         </setHeader>
 
-        <!-- Simulate looking up book details (in real scenario, would query database) -->
-        <choice>
-            <when>
-                <simple>${header.isbn} == '9781234567890'</simple>
-                <setBody>
-                    <constant>{
-                        "isbn": "9781234567890",
-                        "title": "The Art of Java Programming",
-                        "author": "Jane Developer",
-                        "genre": "Technology",
-                        "price": 49.99,
-                        "stock": 100
-                    }</constant>
-                </setBody>
-            </when>
-            <when>
-                <simple>${header.isbn} == '9780987654321'</simple>
-                <setBody>
-                    <constant>{
-                        "isbn": "9780987654321",
-                        "title": "Python for Data Science",
-                        "author": "John Analyst",
-                        "genre": "Technology",
-                        "price": 29.99,
-                        "stock": 50
-                    }</constant>
-                </setBody>
-            </when>
-            <otherwise>
-                <setBody>
-                    <constant>{
-                        "isbn": "${header.isbn}",
-                        "title": "Unknown Book",
-                        "author": "Unknown",
-                        "genre": "Unknown",
-                        "price": 0.0,
-                        "stock": 0
-                    }</constant>
-                </setBody>
-            </otherwise>
-        </choice>
-
+        <!-- Query book details from SQLite database -->
+        <to uri="sql:SELECT isbn, title, author, genre, price, stock FROM books WHERE isbn = :#isbn?dataSource=sqliteDataSource&amp;outputType=SELECT_ONE"/>
+        
+        <!-- Log book details if found -->
         <log message="Book details for ${header.isbn}: ${body}"/>
     </route>
 
