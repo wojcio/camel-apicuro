@@ -21,28 +21,34 @@ In the `camel-apicuro` project, we use the **JSON Schema Kafka SerDes** to valid
 
 ## 3. Useful API Operations
 
-Once your infrastructure is up (using `./start.sh` or `podman-compose up -d`), you can interact with Apicurio via `curl`:
+Once your infrastructure is up (using `./start.sh` or `podman-compose up -d`) and the Camel application has been run, you can interact with Apicurio via `curl`:
 
 ### Check System Info
 ```bash
-curl http://localhost:8080/apis/registry/v2/system/info
+curl http://localhost:8080/api/system/info
 ```
 
 ### List all Artifacts
 ```bash
-curl http://localhost:8080/apis/registry/v2/search/artifacts
+curl http://localhost:8080/api/artifacts
 ```
 
 ### View a Specific Schema (after running the Camel app)
 ```bash
-# Books schema
-curl http://localhost:8080/apis/registry/v2/groups/default/artifacts/bookstore-books-value
+# List all artifacts first
+curl http://localhost:8080/api/artifacts
 
-# Orders schema
-curl http://localhost:8080/apis/registry/v2/groups/default/artifacts/bookstore-orders-value
+# View a specific artifact (replace with actual artifact ID)
+curl http://localhost:8080/api/artifacts/{artifact-id}
+```
 
-# Shipments schema
-curl http://localhost:8080/apis/registry/v2/groups/default/artifacts/bookstore-shipments-value
+### Manually Register a Schema (if needed)
+If the Camel application hasn't been run yet, you can manually register schemas:
+```bash
+curl -X POST http://localhost:8080/api/artifacts \
+  -H "Content-Type: application/json" \
+  -H "X-Registry-ArtifactType: JSON" \
+  -d @src/main/resources/schemas/bookstore-event.json
 ```
 
 ## 4. The Web UI
@@ -63,3 +69,5 @@ The bookstore application uses these JSON schemas:
 | `bookstore-books` | `src/main/resources/schemas/bookstore-event.json` | BookAddedEvent, OrderCreatedEvent, ShipmentCreatedEvent |
 | `bookstore-orders` | Same as above | Order events with nested items |
 | `bookstore-shipments` | Same as above | Shipment tracking events |
+
+**Note**: Schemas are auto-registered when the Camel application produces messages to Kafka. If you haven't run the application yet, manually register the schema using the command above.
