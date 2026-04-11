@@ -35,17 +35,42 @@ This project demonstrates a **Bookstore Event Streaming** system using Apache Ca
 - Maven
 - Podman (or Docker) and Podman Compose
 
-## Infrastructure Setup
+## Quick Start
 
-To start Kafka and Apicurio Registry using Podman:
+### 1. Start Infrastructure Containers
 
+Use the provided scripts to start Kafka and Apicurio Registry:
+
+```bash
+./start.sh
+```
+
+Or manually:
 ```bash
 podman-compose up -d
 ```
 
 This will start:
 - **Kafka** (KRaft mode) on `localhost:9092`
-- **Apicurio Registry** (In-memory) on `http://localhost:8080`
+- **Apicurio Registry** (In-memory) on `http://localhost:8080/ui`
+
+### 2. Run the Camel Application
+
+```bash
+mvn camel:run
+```
+
+## Container Management
+
+### Start Containers
+```bash
+./start.sh
+```
+
+### Stop Containers
+```bash
+./stop.sh
+```
 
 ## Database Setup
 
@@ -55,14 +80,6 @@ The SQLite database is automatically initialized on application startup with:
 - **Sample Data**: `src/main/resources/db/data.sql` (15 books, 5 customers, 3 orders)
 
 The database file is created at `bookstore.db` in the project directory.
-
-## Running the Project
-
-Once the infrastructure is up, run the Camel application:
-
-```bash
-mvn camel:run
-```
 
 ## Configuration
 

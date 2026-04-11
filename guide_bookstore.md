@@ -2,6 +2,29 @@
 
 This guide explains the bookstore event streaming implementation using Apache Camel XML DSL, integrated with Apicurio Registry for schema management, SQLite for persistent data storage, and Netty HTTP for REST API endpoints.
 
+## Prerequisites
+
+Before running the application:
+
+1. **Start Infrastructure Containers**
+   ```bash
+   ./start.sh
+   ```
+   
+   Or manually:
+   ```bash
+   podman-compose up -d
+   ```
+
+2. **Verify Containers**
+   ```bash
+   podman ps
+   ```
+   
+   You should see:
+   - `kafka` on port 9092
+   - `apicurio` on port 8080
+
 ## Overview
 
 The bookstore application demonstrates real-world event streaming patterns including:
@@ -228,9 +251,9 @@ curl -X POST http://localhost:8081/api/orders \
 
 ## Running the Application
 
-### 1. Start Infrastructure
+### 1. Start Infrastructure (if not already running)
 ```bash
-podman-compose up -d
+./start.sh
 ```
 
 This starts:
@@ -253,13 +276,13 @@ open http://localhost:8080/ui
 
 List Kafka topics:
 ```bash
-podman exec -it kafka /opt/bitnami/kafka/bin/kafka-topics.sh \
+podman exec -it kafka /bin/kafka-topics.sh \
   --bootstrap-server localhost:9092 --list
 ```
 
 Consume messages manually:
 ```bash
-podman exec -it kafka /opt/bitnami/kafka/bin/kafka-console-consumer.sh \
+podman exec -it kafka /bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 --topic bookstore-orders \
   --from-beginning
 ```
