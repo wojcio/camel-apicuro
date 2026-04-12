@@ -69,7 +69,28 @@ podman exec -it kafka /bin/kafka-topics.sh \
   --partitions 1 --replication-factor 1
 ```
 
-## 5. Why Use Kafka?
+## 5. Web UI for Kafka Management (Kafbat)
+
+For a visual interface to manage and monitor Kafka, use **Kafbat**:
+
+- **URL**: [http://localhost:8085](http://localhost:8085)
+- **Features**:
+  - Browse Kafka topics
+  - View messages in real-time
+  - Manage consumer groups
+  - Inspect broker metrics and lag
+
+### Start Kafbat
+```bash
+podman-compose up -d kafbat
+```
+
+Or restart all services:
+```bash
+./start.sh
+```
+
+## 6. Why Use Kafka?
 - **Scalability**: Can handle millions of events per second.
 - **Persistence**: Messages are stored on disk and can be replayed.
 - **Decoupling**: Producers don't need to know who the consumers are.
@@ -78,3 +99,4 @@ podman exec -it kafka /bin/kafka-topics.sh \
 - If Camel cannot connect, ensure the container is running: `podman ps`.
 - Check logs: `podman logs kafka`.
 - Ensure the advertised listeners in `compose.yaml` match your host access (currently set to `localhost:9092`).
+- If Kafbat cannot connect, ensure Kafka is running and accessible on port 9092.

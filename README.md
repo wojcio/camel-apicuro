@@ -20,6 +20,7 @@ This project demonstrates a **Bookstore Event Streaming** system using Apache Ca
   - Enrich to add book details from database
   - Choice (Route) for conditional processing
   - Dead Letter Channel for error handling
+- **Kafbat UI**: Web-based Kafka management interface (port 8085)
 
 ## Event Types
 
@@ -39,7 +40,7 @@ This project demonstrates a **Bookstore Event Streaming** system using Apache Ca
 
 ### 1. Start Infrastructure Containers
 
-Use the provided scripts to start Kafka and Apicurio Registry:
+Use the provided scripts to start Kafka, Apicurio Registry, and Kafbat:
 
 ```bash
 ./start.sh
@@ -53,6 +54,7 @@ podman-compose up -d
 This will start:
 - **Kafka** (KRaft mode) on `localhost:9092`
 - **Apicurio Registry** (In-memory) on `http://localhost:8080/ui`
+- **Kafbat UI** (Web-based Kafka management) on `http://localhost:8085`
 
 ### 2. Run the Camel Application
 

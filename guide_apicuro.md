@@ -55,7 +55,13 @@ curl -X POST http://localhost:8080/api/artifacts \
 Apicurio provides a user-friendly interface to manage your schemas visually.
 - **URL**: [http://localhost:8080/ui](http://localhost:8080/ui)
 
-## 5. Why Use This?
+## 5. Alternative Kafka Web UI (Kafbat)
+For a more comprehensive Kafka management experience, you can use **Kafbat**:
+- **URL**: [http://localhost:8085](http://localhost:8085)
+- **Features**: Browse topics, view messages, manage consumer groups, inspect broker metrics
+- **Start with**: `podman-compose up -d kafbat`
+
+## 6. Why Use This?
 -   **Validation**: Catch "bad" data at the producer level before it pollutes your Kafka topics.
 -   **Evolution**: Update your JSON schema in `src/main/resources/schemas/` and Apicurio will manage the versioning for you.
 -   **Consistency**: Ensure all consumers of your Kafka topics are using the same data contract.
@@ -71,3 +77,11 @@ The bookstore application uses these JSON schemas:
 | `bookstore-shipments` | Same as above | Shipment tracking events |
 
 **Note**: Schemas are auto-registered when the Camel application produces messages to Kafka. If you haven't run the application yet, manually register the schema using the command above.
+
+## 7. Troubleshooting
+
+### Kafbat Not Connecting
+If Kafbat cannot connect to Kafka:
+1. Ensure Kafka is running: `podman ps | grep kafka`
+2. Check logs: `podman logs kafbat`
+3. Verify Kafka advertised listeners match your configuration

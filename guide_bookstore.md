@@ -1,6 +1,6 @@
 # Bookstore Event Streaming with Apache Camel
 
-This guide explains the bookstore event streaming implementation using Apache Camel XML DSL, integrated with Apicurio Registry for schema management, SQLite for persistent data storage, and Netty HTTP for REST API endpoints.
+This guide explains the bookstore event streaming implementation using Apache Camel XML DSL, integrated with Apicurio Registry for schema management, SQLite for persistent data storage, Netty HTTP for REST API endpoints, and Kafbat for Kafka management.
 
 ## Prerequisites
 
@@ -10,7 +10,7 @@ Before running the application:
    ```bash
    ./start.sh
    ```
-   
+
    Or manually:
    ```bash
    podman-compose up -d
@@ -20,10 +20,11 @@ Before running the application:
    ```bash
    podman ps
    ```
-   
+
    You should see:
    - `kafka` on port 9092
    - `apicurio` on port 8080
+   - `kafbat` on port 8085 (Kafka management UI)
 
 ## Overview
 
@@ -259,6 +260,7 @@ curl -X POST http://localhost:8081/api/orders \
 This starts:
 - **Kafka** on `localhost:9092`
 - **Apicurio Registry** on `http://localhost:8080`
+- **Kafbat UI** on `http://localhost:8085` (web-based Kafka management)
 
 ### 2. Run the Camel Application
 ```bash
@@ -272,6 +274,11 @@ The REST API will be available on `http://localhost:8081`.
 Check Apicurio Registry UI:
 ```bash
 open http://localhost:8080/ui
+```
+
+Check Kafbat UI for Kafka management:
+```bash
+open http://localhost:8085
 ```
 
 List Kafka topics:
