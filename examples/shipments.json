@@ -1,0 +1,454 @@
+{
+  "description": "25 Shipment Request Examples for bookstore API",
+  "base_url": "http://localhost:8081/api/orders",
+  "note": "Shipments are typically created after orders, this shows the shipment event structure"
+}
+---
+# Example 1: Shipment for ORD-001 (Standard)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-001",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-15T10:30:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-ORD001-001",
+      "orderId": "ORD-001",
+      "carrier": "UPS Ground",
+      "serviceLevel": "Standard",
+      "trackingNumber": "1Z999AA10123456784",
+      "estimatedDelivery": "2024-04-19"
+    }
+  }'
+
+---
+# Example 2: Shipment for ORD-001 (Expedited - filtered)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-002",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-15T10:35:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-ORD001-002",
+      "orderId": "ORD-001",
+      "carrier": "FedEx 2Day",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "7946432109876543",
+      "estimatedDelivery": "2024-04-17"
+    }
+  }'
+
+---
+# Example 3: Shipment for Customer 2 (Standard)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-003",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-15T14:20:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-ORD002-001",
+      "orderId": "ORD-002",
+      "carrier": "USPS Priority",
+      "serviceLevel": "Standard",
+      "trackingNumber": "9407102000000000000001",
+      "estimatedDelivery": "2024-04-18"
+    }
+  }'
+
+---
+# Example 4: Shipment for High-value order (Expedited - filtered)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-004",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-15T09:15:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-ORD003-001",
+      "orderId": "ORD-003",
+      "carrier": "DHL Express",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "003401234567890001",
+      "estimatedDelivery": "2024-04-16"
+    }
+  }'
+
+---
+# Example 5: Shipment for ORD-CUST001-2024-001
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-005",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-15T16:45:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW001-001",
+      "orderId": "ORD-CUST001-2024-001",
+      "carrier": "UPS Ground",
+      "serviceLevel": "Standard",
+      "trackingNumber": "1Z999AA10123456785",
+      "estimatedDelivery": "2024-04-19"
+    }
+  }'
+
+---
+# Example 6: Shipment - USPS Standard
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-006",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-16T08:30:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW002-001",
+      "orderId": "ORD-CUST002-2024-001",
+      "carrier": "USPS Standard",
+      "serviceLevel": "Standard",
+      "trackingNumber": "9407102000000000000002",
+      "estimatedDelivery": "2024-04-22"
+    }
+  }'
+
+---
+# Example 7: Shipment - FedEx Expedited
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-007",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-16T09:00:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW003-001",
+      "orderId": "ORD-CUST003-2024-001",
+      "carrier": "FedEx SameDay",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "7946432109876544",
+      "estimatedDelivery": "2024-04-16"
+    }
+  }'
+
+---
+# Example 8: Shipment - DHL International
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-008",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-16T10:15:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW004-001",
+      "orderId": "ORD-CUST004-2024-001",
+      "carrier": "DHL International",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "003401234567890002",
+      "estimatedDelivery": "2024-04-18"
+    }
+  }'
+
+---
+# Example 9: Shipment - UPS Next Day
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-009",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-16T11:30:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW005-001",
+      "orderId": "ORD-CUST005-2024-001",
+      "carrier": "UPS Next Day Air",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "1Z999AA10123456786",
+      "estimatedDelivery": "2024-04-17"
+    }
+  }'
+
+---
+# Example 10: Shipment - Standard Ground
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-010",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-16T13:45:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW006-001",
+      "orderId": "ORD-CUST001-2024-002",
+      "carrier": "UPS Ground",
+      "serviceLevel": "Standard",
+      "trackingNumber": "1Z999AA10123456787",
+      "estimatedDelivery": "2024-04-23"
+    }
+  }'
+
+---
+# Example 11: Shipment - expedited shipping
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-011",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-17T08:00:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW007-001",
+      "orderId": "ORD-CUST002-2024-002",
+      "carrier": "FedEx 2Day",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "7946432109876545",
+      "estimatedDelivery": "2024-04-19"
+    }
+  }'
+
+---
+# Example 12: Shipment - standard ground
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-012",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-17T09:30:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW008-001",
+      "orderId": "ORD-CUST003-2024-002",
+      "carrier": "USPS Priority",
+      "serviceLevel": "Standard",
+      "trackingNumber": "9407102000000000000003",
+      "estimatedDelivery": "2024-04-21"
+    }
+  }'
+
+---
+# Example 13: Shipment - expedited (high-value order)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-013",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-17T10:45:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW009-001",
+      "orderId": "ORD-CUST004-2024-002",
+      "carrier": "DHL Express",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "003401234567890003",
+      "estimatedDelivery": "2024-04-18"
+    }
+  }'
+
+---
+# Example 14: Shipment - standard
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-014",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-17T12:00:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW010-001",
+      "orderId": "ORD-CUST005-2024-002",
+      "carrier": "UPS Ground",
+      "serviceLevel": "Standard",
+      "trackingNumber": "1Z999AA10123456788",
+      "estimatedDelivery": "2024-04-24"
+    }
+  }'
+
+---
+# Example 15: Shipment - expedited shipping
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-015",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-17T14:30:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW011-001",
+      "orderId": "ORD-CUST001-2024-003",
+      "carrier": "FedEx Priority",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "7946432109876546",
+      "estimatedDelivery": "2024-04-18"
+    }
+  }'
+
+---
+# Example 16: Shipment - standard ground
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-016",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-18T08:15:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW012-001",
+      "orderId": "ORD-CUST002-2024-003",
+      "carrier": "USPS Standard",
+      "serviceLevel": "Standard",
+      "trackingNumber": "9407102000000000000004",
+      "estimatedDelivery": "2024-04-25"
+    }
+  }'
+
+---
+# Example 17: Shipment - expedited (bulk order)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-017",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-18T09:45:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW013-001",
+      "orderId": "ORD-CUST003-2024-003",
+      "carrier": "DHL Express",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "003401234567890004",
+      "estimatedDelivery": "2024-04-19"
+    }
+  }'
+
+---
+# Example 18: Shipment - standard
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-018",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-18T10:30:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW014-001",
+      "orderId": "ORD-CUST004-2024-003",
+      "carrier": "UPS Ground",
+      "serviceLevel": "Standard",
+      "trackingNumber": "1Z999AA10123456789",
+      "estimatedDelivery": "2024-04-25"
+    }
+  }'
+
+---
+# Example 19: Shipment - expedited gift order
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-019",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-18T11:15:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW015-001",
+      "orderId": "ORD-CUST005-2024-003",
+      "carrier": "FedEx 2Day",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "7946432109876547",
+      "estimatedDelivery": "2024-04-20"
+    }
+  }'
+
+---
+# Example 20: Shipment - standard ground
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-020",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-18T13:00:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW016-001",
+      "orderId": "ORD-CUST001-2024-004",
+      "carrier": "USPS Priority",
+      "serviceLevel": "Standard",
+      "trackingNumber": "9407102000000000000005",
+      "estimatedDelivery": "2024-04-22"
+    }
+  }'
+
+---
+# Example 21: Shipment - expedited (science collection)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-021",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-19T08:30:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW017-001",
+      "orderId": "ORD-CUST002-2024-004",
+      "carrier": "DHL Express",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "003401234567890005",
+      "estimatedDelivery": "2024-04-20"
+    }
+  }'
+
+---
+# Example 22: Shipment - standard
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-022",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-19T09:45:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW018-001",
+      "orderId": "ORD-CUST003-2024-004",
+      "carrier": "UPS Ground",
+      "serviceLevel": "Standard",
+      "trackingNumber": "1Z999AA10123456790",
+      "estimatedDelivery": "2024-04-26"
+    }
+  }'
+
+---
+# Example 23: Shipment - expedited (fantasy collection)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-023",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-19T10:30:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW019-001",
+      "orderId": "ORD-CUST004-2024-004",
+      "carrier": "FedEx Priority",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "7946432109876548",
+      "estimatedDelivery": "2024-04-20"
+    }
+  }'
+
+---
+# Example 24: Shipment - standard ground
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-024",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-19T11:15:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW020-001",
+      "orderId": "ORD-CUST005-2024-004",
+      "carrier": "USPS Standard",
+      "serviceLevel": "Standard",
+      "trackingNumber": "9407102000000000000006",
+      "estimatedDelivery": "2024-04-26"
+    }
+  }'
+
+---
+# Example 25: Shipment - expedited (mixed complete order)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "2024123456789-SHIP-025",
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": 2024-04-19T13:45:00.000Z,
+    "shipment": {
+      "shipmentId": "SHIP-NEW021-001",
+      "orderId": "ORD-CUST001-2024-006",
+      "carrier": "DHL Express",
+      "serviceLevel": "Expedited",
+      "trackingNumber": "003401234567890006",
+      "estimatedDelivery": "2024-04-20"
+    }
+  }'

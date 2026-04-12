@@ -1,0 +1,825 @@
+{
+  "description": "25 Order Request Examples for bookstore API",
+  "base_url": "http://localhost:8081/api/orders",
+  "endpoints": {
+    "get_all": "/api/orders",
+    "get_by_id": "/api/orders/{orderId}",
+    "get_items": "/api/orders/{orderId}/items",
+    "create_order": "/api/orders"
+  }
+}
+---
+# Example 1: Get all orders
+curl -X GET "http://localhost:8081/api/orders"
+
+---
+# Example 2: Get order by ID
+curl -X GET "http://localhost:8081/api/orders/ORD-001"
+
+---
+# Example 3: Get order items
+curl -X GET "http://localhost:8081/api/orders/ORD-001/items"
+
+---
+# Example 4: Create order with single item
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST001-2024-001",
+    "customerId": "CUST-001",
+    "items": [
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      }
+    ],
+    "subtotal": 49.99,
+    "tax": 4.00,
+    "shippingCost": 5.99,
+    "totalAmount": 59.98,
+    "shippingAddress": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 5: Create order with multiple items (same customer)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST001-2024-002",
+    "customerId": "CUST-001",
+    "items": [
+      {
+        "isbn": "9781234567890",
+        "quantity": 2,
+        "unitPrice": 49.99
+      },
+      {
+        "isbn": "9781234567891",
+        "quantity": 1,
+        "unitPrice": 29.99
+      }
+    ],
+    "subtotal": 129.97,
+    "tax": 10.40,
+    "shippingCost": 5.99,
+    "totalAmount": 146.36,
+    "shippingAddress": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 6: Create order for Customer 2
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST002-2024-001",
+    "customerId": "CUST-002",
+    "items": [
+      {
+        "isbn": "9781234567900",
+        "quantity": 3,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567910",
+        "quantity": 1,
+        "unitPrice": 18.99
+      }
+    ],
+    "subtotal": 63.96,
+    "tax": 5.12,
+    "shippingCost": 7.99,
+    "totalAmount": 76.07,
+    "shippingAddress": {
+      "street": "456 Oak Avenue",
+      "city": "Los Angeles",
+      "state": "CA",
+      "zipCode": "90001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 7: Create high-value order
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST003-2024-001",
+    "customerId": "CUST-003",
+    "items": [
+      {
+        "isbn": "9781234567893",
+        "quantity": 1,
+        "unitPrice": 54.99
+      },
+      {
+        "isbn": "9781234567894",
+        "quantity": 1,
+        "unitPrice": 44.99
+      },
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      }
+    ],
+    "subtotal": 149.97,
+    "tax": 12.00,
+    "shippingCost": 5.99,
+    "totalAmount": 167.96,
+    "shippingAddress": {
+      "street": "789 Pine Road",
+      "city": "Chicago",
+      "state": "IL",
+      "zipCode": "60601",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 8: Create budget-friendly order
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST004-2024-001",
+    "customerId": "CUST-004",
+    "items": [
+      {
+        "isbn": "9781234567900",
+        "quantity": 5,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567901",
+        "quantity": 3,
+        "unitPrice": 12.99
+      }
+    ],
+    "subtotal": 117.88,
+    "tax": 9.43,
+    "shippingCost": 5.99,
+    "totalAmount": 133.30,
+    "shippingAddress": {
+      "street": "321 Elm Boulevard",
+      "city": "Houston",
+      "state": "TX",
+      "zipCode": "77001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 9: Create mixed genre order
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST005-2024-001",
+    "customerId": "CUST-005",
+    "items": [
+      {
+        "isbn": "9781234567900",
+        "quantity": 1,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      },
+      {
+        "isbn": "9781234567910",
+        "quantity": 1,
+        "unitPrice": 18.99
+      },
+      {
+        "isbn": "9781234567930",
+        "quantity": 1,
+        "unitPrice": 19.99
+      }
+    ],
+    "subtotal": 103.96,
+    "tax": 8.32,
+    "shippingCost": 5.99,
+    "totalAmount": 118.27,
+    "shippingAddress": {
+      "street": "654 Maple Drive",
+      "city": "Phoenix",
+      "state": "AZ",
+      "zipCode": "85001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 10: Create order for Science books
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST001-2024-003",
+    "customerId": "CUST-001",
+    "items": [
+      {
+        "isbn": "9781234567910",
+        "quantity": 2,
+        "unitPrice": 18.99
+      },
+      {
+        "isbn": "9781234567911",
+        "quantity": 1,
+        "unitPrice": 16.99
+      },
+      {
+        "isbn": "9781234567912",
+        "quantity": 1,
+        "unitPrice": 21.99
+      }
+    ],
+    "subtotal": 76.96,
+    "tax": 6.16,
+    "shippingCost": 5.99,
+    "totalAmount": 89.11,
+    "shippingAddress": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 11: Create order for Fantasy books
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST002-2024-002",
+    "customerId": "CUST-002",
+    "items": [
+      {
+        "isbn": "9781234567930",
+        "quantity": 2,
+        "unitPrice": 19.99
+      },
+      {
+        "isbn": "9781234567931",
+        "quantity": 1,
+        "unitPrice": 26.99
+      }
+    ],
+    "subtotal": 66.97,
+    "tax": 5.36,
+    "shippingCost": 5.99,
+    "totalAmount": 78.32,
+    "shippingAddress": {
+      "street": "456 Oak Avenue",
+      "city": "Los Angeles",
+      "state": "CA",
+      "zipCode": "90001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 12: Create order for Technology books (high-value)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST003-2024-002",
+    "customerId": "CUST-003",
+    "items": [
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      },
+      {
+        "isbn": "9781234567893",
+        "quantity": 1,
+        "unitPrice": 54.99
+      },
+      {
+        "isbn": "9781234567894",
+        "quantity": 1,
+        "unitPrice": 44.99
+      }
+    ],
+    "subtotal": 149.97,
+    "tax": 12.00,
+    "shippingCost": 5.99,
+    "totalAmount": 167.96,
+    "shippingAddress": {
+      "street": "789 Pine Road",
+      "city": "Chicago",
+      "state": "IL",
+      "zipCode": "60601",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 13: Create order for Romance books
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST004-2024-002",
+    "customerId": "CUST-004",
+    "items": [
+      {
+        "isbn": "9781234567940",
+        "quantity": 2,
+        "unitPrice": 11.99
+      },
+      {
+        "isbn": "9781234567941",
+        "quantity": 2,
+        "unitPrice": 13.99
+      }
+    ],
+    "subtotal": 51.96,
+    "tax": 4.16,
+    "shippingCost": 5.99,
+    "totalAmount": 62.11,
+    "shippingAddress": {
+      "street": "321 Elm Boulevard",
+      "city": "Houston",
+      "state": "TX",
+      "zipCode": "77001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 14: Create order for History books
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST005-2024-002",
+    "customerId": "CUST-005",
+    "items": [
+      {
+        "isbn": "9781234567920",
+        "quantity": 1,
+        "unitPrice": 22.99
+      },
+      {
+        "isbn": "9781234567921",
+        "quantity": 2,
+        "unitPrice": 24.99
+      }
+    ],
+    "subtotal": 72.97,
+    "tax": 5.84,
+    "shippingCost": 5.99,
+    "totalAmount": 84.80,
+    "shippingAddress": {
+      "street": "654 Maple Drive",
+      "city": "Phoenix",
+      "state": "AZ",
+      "zipCode": "85001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 15: Create mixed order with Fiction and Technology
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST001-2024-004",
+    "customerId": "CUST-001",
+    "items": [
+      {
+        "isbn": "9781234567900",
+        "quantity": 2,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      }
+    ],
+    "subtotal": 79.97,
+    "tax": 6.40,
+    "shippingCost": 5.99,
+    "totalAmount": 92.36,
+    "shippingAddress": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 16: Create order for all Fiction books
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST002-2024-003",
+    "customerId": "CUST-002",
+    "items": [
+      {
+        "isbn": "9781234567900",
+        "quantity": 1,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567901",
+        "quantity": 2,
+        "unitPrice": 12.99
+      },
+      {
+        "isbn": "9781234567902",
+        "quantity": 1,
+        "unitPrice": 15.99
+      }
+    ],
+    "subtotal": 60.96,
+    "tax": 4.88,
+    "shippingCost": 5.99,
+    "totalAmount": 71.83,
+    "shippingAddress": {
+      "street": "456 Oak Avenue",
+      "city": "Los Angeles",
+      "state": "CA",
+      "zipCode": "90001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 17: Create bulk order (Student package)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST003-2024-003",
+    "customerId": "CUST-003",
+    "items": [
+      {
+        "isbn": "9781234567890",
+        "quantity": 2,
+        "unitPrice": 49.99
+      },
+      {
+        "isbn": "9781234567891",
+        "quantity": 2,
+        "unitPrice": 29.99
+      },
+      {
+        "isbn": "9781234567892",
+        "quantity": 1,
+        "unitPrice": 39.99
+      }
+    ],
+    "subtotal": 219.95,
+    "tax": 17.60,
+    "shippingCost": 9.99,
+    "totalAmount": 247.54,
+    "shippingAddress": {
+      "street": "789 Pine Road",
+      "city": "Chicago",
+      "state": "IL",
+      "zipCode": "60601",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 18: Create gift order
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST004-2024-003",
+    "customerId": "CUST-004",
+    "items": [
+      {
+        "isbn": "9781234567900",
+        "quantity": 1,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567901",
+        "quantity": 1,
+        "unitPrice": 12.99
+      },
+      {
+        "isbn": "9781234567930",
+        "quantity": 1,
+        "unitPrice": 19.99
+      },
+      {
+        "isbn": "9781234567940",
+        "quantity": 1,
+        "unitPrice": 11.99
+      }
+    ],
+    "subtotal": 59.96,
+    "tax": 4.80,
+    "shippingCost": 7.99,
+    "totalAmount": 72.75,
+    "shippingAddress": {
+      "street": "321 Elm Boulevard",
+      "city": "Houston",
+      "state": "TX",
+      "zipCode": "77001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 19: Create collection order (Complete genres)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST005-2024-003",
+    "customerId": "CUST-005",
+    "items": [
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      },
+      {
+        "isbn": "9781234567900",
+        "quantity": 1,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567910",
+        "quantity": 1,
+        "unitPrice": 18.99
+      },
+      {
+        "isbn": "9781234567920",
+        "quantity": 1,
+        "unitPrice": 22.99
+      },
+      {
+        "isbn": "9781234567930",
+        "quantity": 1,
+        "unitPrice": 19.99
+      },
+      {
+        "isbn": "9781234567940",
+        "quantity": 1,
+        "unitPrice": 11.99
+      }
+    ],
+    "subtotal": 138.94,
+    "tax": 11.12,
+    "shippingCost": 5.99,
+    "totalAmount": 156.05,
+    "shippingAddress": {
+      "street": "654 Maple Drive",
+      "city": "Phoenix",
+      "state": "AZ",
+      "zipCode": "85001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 20: Create order with Science and Technology
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST001-2024-005",
+    "customerId": "CUST-001",
+    "items": [
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      },
+      {
+        "isbn": "9781234567893",
+        "quantity": 1,
+        "unitPrice": 54.99
+      },
+      {
+        "isbn": "9781234567910",
+        "quantity": 2,
+        "unitPrice": 18.99
+      }
+    ],
+    "subtotal": 142.96,
+    "tax": 11.44,
+    "shippingCost": 5.99,
+    "totalAmount": 160.39,
+    "shippingAddress": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 21: Create low-cost order
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST002-2024-004",
+    "customerId": "CUST-002",
+    "items": [
+      {
+        "isbn": "9781234567900",
+        "quantity": 3,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567901",
+        "quantity": 2,
+        "unitPrice": 12.99
+      }
+    ],
+    "subtotal": 74.95,
+    "tax": 6.00,
+    "shippingCost": 5.99,
+    "totalAmount": 86.94,
+    "shippingAddress": {
+      "street": "456 Oak Avenue",
+      "city": "Los Angeles",
+      "state": "CA",
+      "zipCode": "90001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 22: Create mixed order (5 items)
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST003-2024-004",
+    "customerId": "CUST-003",
+    "items": [
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      },
+      {
+        "isbn": "9781234567900",
+        "quantity": 1,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567901",
+        "quantity": 1,
+        "unitPrice": 12.99
+      },
+      {
+        "isbn": "9781234567910",
+        "quantity": 1,
+        "unitPrice": 18.99
+      },
+      {
+        "isbn": "9781234567920",
+        "quantity": 1,
+        "unitPrice": 22.99
+      }
+    ],
+    "subtotal": 120.95,
+    "tax": 9.68,
+    "shippingCost": 5.99,
+    "totalAmount": 136.62,
+    "shippingAddress": {
+      "street": "789 Pine Road",
+      "city": "Chicago",
+      "state": "IL",
+      "zipCode": "60601",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 23: Create Fantasy collection
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST004-2024-004",
+    "customerId": "CUST-004",
+    "items": [
+      {
+        "isbn": "9781234567930",
+        "quantity": 2,
+        "unitPrice": 19.99
+      },
+      {
+        "isbn": "9781234567931",
+        "quantity": 1,
+        "unitPrice": 26.99
+      }
+    ],
+    "subtotal": 66.97,
+    "tax": 5.36,
+    "shippingCost": 5.99,
+    "totalAmount": 78.32,
+    "shippingAddress": {
+      "street": "321 Elm Boulevard",
+      "city": "Houston",
+      "state": "TX",
+      "zipCode": "77001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 24: Create Romance collection
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST005-2024-004",
+    "customerId": "CUST-005",
+    "items": [
+      {
+        "isbn": "9781234567940",
+        "quantity": 3,
+        "unitPrice": 11.99
+      },
+      {
+        "isbn": "9781234567941",
+        "quantity": 2,
+        "unitPrice": 13.99
+      }
+    ],
+    "subtotal": 67.95,
+    "tax": 5.44,
+    "shippingCost": 5.99,
+    "totalAmount": 79.38,
+    "shippingAddress": {
+      "street": "654 Maple Drive",
+      "city": "Phoenix",
+      "state": "AZ",
+      "zipCode": "85001",
+      "country": "US"
+    }
+  }'
+
+---
+# Example 25: Create mixed complete order
+curl -X POST "http://localhost:8081/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderId": "ORD-CUST001-2024-006",
+    "customerId": "CUST-001",
+    "items": [
+      {
+        "isbn": "9781234567890",
+        "quantity": 1,
+        "unitPrice": 49.99
+      },
+      {
+        "isbn": "9781234567891",
+        "quantity": 1,
+        "unitPrice": 29.99
+      },
+      {
+        "isbn": "9781234567892",
+        "quantity": 1,
+        "unitPrice": 39.99
+      },
+      {
+        "isbn": "9781234567900",
+        "quantity": 2,
+        "unitPrice": 14.99
+      },
+      {
+        "isbn": "9781234567901",
+        "quantity": 1,
+        "unitPrice": 12.99
+      },
+      {
+        "isbn": "9781234567910",
+        "quantity": 1,
+        "unitPrice": 18.99
+      }
+    ],
+    "subtotal": 176.94,
+    "tax": 14.16,
+    "shippingCost": 7.99,
+    "totalAmount": 199.09,
+    "shippingAddress": {
+      "street": "123 Main Street",
+      "city": "New York",
+      "state": "NY",
+      "zipCode": "10001",
+      "country": "US"
+    }
+  }'

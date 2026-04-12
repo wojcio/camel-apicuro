@@ -1,0 +1,277 @@
+{
+  "description": "25 Book Request Examples for bookstore API",
+  "base_url": "http://localhost:8081/api/books",
+  "endpoints": {
+    "get_all": "/api/books",
+    "get_by_isbn": "/api/books/{isbn}",
+    "add_book": "/api/books",
+    "update_stock": "/api/books/{isbn}/stock"
+  }
+}
+---
+# Example 1: Get all books
+curl -X GET "http://localhost:8081/api/books"
+
+---
+# Example 2: Get book by ISBN (Technology)
+curl -X GET "http://localhost:8081/api/books/9781234567890"
+
+---
+# Example 3: Get book by ISBN (Fiction)
+curl -X GET "http://localhost:8081/api/books/9781234567900"
+
+---
+# Example 4: Get book by ISBN (Science)
+curl -X GET "http://localhost:8081/api/books/9781234567910"
+
+---
+# Example 5: Get book by ISBN (History)
+curl -X GET "http://localhost:8081/api/books/9781234567920"
+
+---
+# Example 6: Get book by ISBN (Fantasy)
+curl -X GET "http://localhost:8081/api/books/9781234567930"
+
+---
+# Example 7: Get book by ISBN (Romance)
+curl -X GET "http://localhost:8081/api/books/9781234567940"
+
+---
+# Example 8: Add a new book (Technology)
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000001",
+    "title": "Advanced Spring Boot Patterns",
+    "author": "Dev Master",
+    "genre": "Technology",
+    "price": 59.99,
+    "stock": 50,
+    "publishedDate": "2024-06-15"
+  }'
+
+---
+# Example 9: Add a new book (Fiction)
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000002",
+    "title": "The Shadow in the Attic",
+    "author": "Mystery Writer",
+    "genre": "Fiction",
+    "price": 16.99,
+    "stock": 75,
+    "publishedDate": "2024-05-20"
+  }'
+
+---
+# Example 10: Add a new book (Science)
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000003",
+    "title": "Quantum Computing Explained",
+    "author": "Physicist Pro",
+    "genre": "Science",
+    "price": 42.99,
+    "stock": 30,
+    "publishedDate": "2024-07-10"
+  }'
+
+---
+# Example 11: Add a new book (History)
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000004",
+    "title": "The Renaissance Era",
+    "author": "History Buff",
+    "genre": "History",
+    "price": 28.99,
+    "stock": 40,
+    "publishedDate": "2024-04-05"
+  }'
+
+---
+# Example 12: Add a new book (Fantasy)
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000005",
+    "title": "Dragon Realm Chronicles",
+    "author": "Fantasy Author",
+    "genre": "Fantasy",
+    "price": 24.99,
+    "stock": 100,
+    "publishedDate": "2024-08-01"
+  }'
+
+---
+# Example 13: Update stock - increase
+curl -X PUT "http://localhost:8081/api/books/9781234567890/stock" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "stock": 25
+  }'
+
+---
+# Example 14: Update stock - decrease (negative)
+curl -X PUT "http://localhost:8081/api/books/9781234567891/stock" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "stock": -10
+  }'
+
+---
+# Example 15: Add another Technology book
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000006",
+    "title": "Machine Learning with Python",
+    "author": "Data Scientist",
+    "genre": "Technology",
+    "price": 49.99,
+    "stock": 60,
+    "publishedDate": "2024-03-15"
+  }'
+
+---
+# Example 16: Add another Fiction book
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000007",
+    "title": "The Last Ship at Sea",
+    "author": "Ocean Writer",
+    "genre": "Fiction",
+    "price": 14.99,
+    "stock": 85,
+    "publishedDate": "2024-02-28"
+  }'
+
+---
+# Example 17: Add another Science book
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000008",
+    "title": "The Origin of Life",
+    "author": "Biologist Bob",
+    "genre": "Science",
+    "price": 21.99,
+    "stock": 45,
+    "publishedDate": "2024-01-20"
+  }'
+
+---
+# Example 18: Add another History book
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000009",
+    "title": "Ancient Civilizations",
+    "author": "Archaeologist Amy",
+    "genre": "History",
+    "price": 26.99,
+    "stock": 55,
+    "publishedDate": "2024-06-01"
+  }'
+
+---
+# Example 19: Add another Fantasy book
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000010",
+    "title": "The Enchanted Forest",
+    "author": "Magical Writer",
+    "genre": "Fantasy",
+    "price": 22.99,
+    "stock": 70,
+    "publishedDate": "2024-05-10"
+  }'
+
+---
+# Example 20: Add another Romance book
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000011",
+    "title": "Love in Paris",
+    "author": "Romance Reader",
+    "genre": "Romance",
+    "price": 13.99,
+    "stock": 90,
+    "publishedDate": "2024-07-25"
+  }'
+
+---
+# Example 21: Add more Technology books
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000012",
+    "title": "Docker and Kubernetes Handbook",
+    "author": "DevOps Expert",
+    "genre": "Technology",
+    "price": 47.99,
+    "stock": 35,
+    "publishedDate": "2024-08-15"
+  }'
+
+---
+# Example 22: Add more Fiction books
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000013",
+    "title": "The Midnight Library",
+    "author": "Night Writer",
+    "genre": "Fiction",
+    "price": 18.99,
+    "stock": 65,
+    "publishedDate": "2024-04-20"
+  }'
+
+---
+# Example 23: Add more Science books
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000014",
+    "title": "The Universe Explained",
+    "author": "Astrophysicist",
+    "genre": "Science",
+    "price": 25.99,
+    "stock": 40,
+    "publishedDate": "2024-03-25"
+  }'
+
+---
+# Example 24: Add more History books
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000015",
+    "title": "World War Stories",
+    "author": "War Historian",
+    "genre": "History",
+    "price": 29.99,
+    "stock": 30,
+    "publishedDate": "2024-06-30"
+  }'
+
+---
+# Example 25: Add more Fantasy books
+curl -X POST "http://localhost:8081/api/books" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isbn": "9780000000016",
+    "title": "The Wizard Academy",
+    "author": "Magic Teacher",
+    "genre": "Fantasy",
+    "price": 23.99,
+    "stock": 80,
+    "publishedDate": "2024-07-05"
+  }'
