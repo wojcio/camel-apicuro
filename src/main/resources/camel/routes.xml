@@ -14,10 +14,10 @@
         <log message="Initializing database..."/>
         
         <!-- Execute schema creation -->
-        <to uri="sql:classpath:db/schema.sql?dataSource=sqliteDataSource"/>
+        <to uri="sql:classpath:db/schema.sql"/>
         
         <!-- Execute sample data insertion -->
-        <to uri="sql:classpath:db/data.sql?dataSource=sqliteDataSource"/>
+        <to uri="sql:classpath:db/data.sql"/>
         
         <log message="Database initialized successfully!"/>
     </route>
@@ -92,12 +92,12 @@
 
         <!-- Unmarshal JSON to POJO -->
         <unmarshal>
-            <json library="Jackson" targetClass="com.example.bookstore.models.BookstoreEvent"/>
+            <json library="Jackson" unmarshalType="com.example.bookstore.models.BookstoreEvent"/>
         </unmarshal>
 
         <!-- Filter: Only process ORDER_CREATED events -->
         <filter>
-            <method bean="orderFilter" method="isOrderCreated"/>
+            <method ref="orderFilter" method="isOrderCreated"/>
             <log message="Processing ORDER_CREATED event: ${body.eventId}"/>
 
             <!-- EIP: Split - process each order item individually -->
@@ -105,11 +105,13 @@
                 <simple>${body.payload.items}</simple>
 
                 <!-- EIP: Enrich - add book details from database -->
-                <enrich uri="direct:get-book-details" strategyRef="itemAggregationStrategy"/>
+                <enrich aggregationStrategy="itemAggregationStrategy">
+                    <constant>direct:get-book-details</constant>
+                </enrich>
 
                 <!-- EIP: Filter - only process in-stock items -->
                 <filter>
-                    <method bean="inventoryFilter" method="isInStock"/>
+                    <method ref="inventoryFilter" method="isInStock"/>
                     <log message="Item ${body.isbn} is in stock (qty: ${body.stock})"/>
 
                     <!-- EIP: Choice - route based on price -->
@@ -127,7 +129,7 @@
             </split>
 
             <!-- EIP: Aggregate - collect all items back -->
-            <aggregate strategyRef="orderAggregationStrategy" completionSize="2">
+            <aggregate aggregationStrategy="orderAggregationStrategy" completionSize="2">
                 <correlationExpression>
                     <simple>${body.payload.orderId}</simple>
                 </correlationExpression>
@@ -156,7 +158,7 @@
         </setHeader>
 
         <!-- Query book details from SQLite database -->
-        <to uri="sql:SELECT isbn, title, author, genre, price, stock FROM books WHERE isbn = :#isbn?dataSource=sqliteDataSource&amp;outputType=SELECT_ONE"/>
+        <to uri="sql:SELECT isbn, title, author, genre, price, stock FROM books WHERE isbn = :#isbn?outputType=SelectOne"/>
         
         <!-- Log book details if found -->
         <log message="Book details for ${header.isbn}: ${body}"/>
@@ -167,21 +169,21 @@
         <from uri="kafka:{{kafka.topic.shipments}}?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;autoOffsetReset=earliest"/>
 
         <unmarshal>
-            <json library="Jackson" targetClass="com.example.bookstore.models.BookstoreEvent"/>
+            <json library="Jackson" unmarshalType="com.example.bookstore.models.BookstoreEvent"/>
         </unmarshal>
 
         <filter>
-            <method bean="shipmentFilter" method="isShipmentCreated"/>
+            <method ref="shipmentFilter" method="isShipmentCreated"/>
 
             <!-- EIP: Transform - format shipping label -->
             <transform>
-                <method bean="shipmentFormatter"/>
+                <method ref="shipmentFormatter"/>
             </transform>
 
             <!-- EIP: Filter - different handling for expedited vs standard -->
             <choice>
                 <when>
-                    <method bean="shipmentFilter" method="isExpedited"/>
+                    <method ref="shipmentFilter" method="isExpedited"/>
                     <log message="EXPEDITED SHIPMENT: ${body} - Priority handling required!"/>
                     <to uri="kafka:{{kafka.topic.expedited}}?brokers={{kafka.brokers}}"/>
                 </when>
@@ -196,14 +198,14 @@
 
     <!-- Route 6: Consume All Events and Report Statistics -->
     <route id="consume-and-report">
-        <from uri="kafka:{{kafka.topic.books}},{{kafka.topic.orders}},{{kafka.topic.shipments}}?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;autoOffsetReset=earliest&amp;consumerConfig.group.id=bookstore-reporter"/>
+        <from uri="kafka:{{kafka.topic.books}},{{kafka.topic.orders}},{{kafka.topic.shipments}}?brokers={{kafka.brokers}}&amp;valueDeserializer=io.apicurio.registry.serde.jsonschema.JsonSchemaKafkaDeserializer&amp;additionalProperties.apicurio.registry.url={{apicurio.registry.url}}&amp;autoOffsetReset=earliest&amp;groupId=bookstore-reporter"/>
 
         <unmarshal>
-            <json library="Jackson" targetClass="com.example.bookstore.models.BookstoreEvent"/>
+            <json library="Jackson" unmarshalType="com.example.bookstore.models.BookstoreEvent"/>
         </unmarshal>
 
         <!-- EIP: Aggregate - collect events over time window -->
-        <aggregate strategyRef="statisticsAggregationStrategy" completionTimeout="60000">
+        <aggregate aggregationStrategy="statisticsAggregationStrategy" completionTimeout="60000">
             <correlationExpression>
                 <constant>true</constant>
             </correlationExpression>
@@ -216,6 +218,116 @@
 
         </aggregate>
 
+    </route>
+
+    <!-- =========================================
+         DIRECT ROUTES FOR API OPERATIONS (Moved from api.xml)
+         ========================================= -->
+
+    <!-- Add a new book to database -->
+    <route id="add-book">
+        <from uri="direct:add-book"/>
+        
+        <!-- Unmarshal JSON to Book POJO -->
+        <unmarshal>
+            <json library="Jackson" unmarshalType="com.example.bookstore.models.Book"/>
+        </unmarshal>
+        
+        <!-- Insert book into database -->
+        <to uri="sql:INSERT INTO books (isbn, title, author, genre, price, stock, published_date) VALUES (:#{body.isbn}, :#{body.title}, :#{body.author}, :#{body.genre}, :#{body.price}, :#{body.stock}, :#{body.publishedDate})"/>
+        
+        <!-- Return success response -->
+        <setHeader name="CamelHttpResponseCode">
+            <constant>201</constant>
+        </setHeader>
+        <setBody>
+            <simple>{"message": "Book added successfully", "isbn": "${body.isbn}"}</simple>
+        </setBody>
+    </route>
+
+    <!-- Update book stock -->
+    <route id="update-stock">
+        <from uri="direct:update-stock"/>
+        
+        <!-- Extract ISBN from path -->
+        <setHeader name="isbn">
+            <simple>${header.isbn}</simple>
+        </setHeader>
+        
+        <!-- Unmarshal JSON body for quantity -->
+        <unmarshal>
+            <json library="Jackson" unmarshalType="com.example.bookstore.models.Book"/>
+        </unmarshal>
+        
+        <!-- Update stock in database -->
+        <setBody>
+            <simple>${body.stock}</simple>
+        </setBody>
+        
+        <!-- Check if book exists and update stock -->
+        <to uri="sql:UPDATE books SET stock = stock + :#stock WHERE isbn = :#isbn"/>
+        
+        <!-- Check if update was successful -->
+        <choice>
+            <when>
+                <simple>${body} &gt; 0</simple>
+                <setHeader name="CamelHttpResponseCode">
+                    <constant>200</constant>
+                </setHeader>
+                <to uri="sql:SELECT isbn, title, author, genre, price, stock FROM books WHERE isbn = :#isbn?outputType=SelectOne"/>
+            </when>
+            <otherwise>
+                <setHeader name="CamelHttpResponseCode">
+                    <constant>404</constant>
+                </setHeader>
+                <setBody>
+                    <simple>{"error": "Book not found or invalid stock update"}</simple>
+                </setBody>
+            </otherwise>
+        </choice>
+    </route>
+
+    <!-- Create a new order -->
+    <route id="create-order">
+        <from uri="direct:create-order"/>
+        
+        <!-- Unmarshal JSON to Order POJO -->
+        <unmarshal>
+            <json library="Jackson" unmarshalType="com.example.bookstore.models.Order"/>
+        </unmarshal>
+        
+        <!-- Validate order -->
+        <choice>
+            <when>
+                <method ref="orderValidator" method="isValid"/>
+                
+                <!-- Insert order into database -->
+                <to uri="sql:INSERT INTO orders (order_id, customer_id, subtotal, tax, shipping_cost, total_amount, shipping_address) VALUES (:#{body.orderId}, :#{body.customerId}, :#{body.subtotal}, :#{body.tax}, :#{body.shippingCost}, :#{body.totalAmount}, :#{body.shippingAddress})"/>
+                
+                <!-- Insert order items -->
+                <split>
+                    <simple>${body.items}</simple>
+                    <to uri="sql:INSERT INTO order_items (order_id, isbn, quantity, unit_price) VALUES (:#{body.orderId}, :#{body.isbn}, :#{body.quantity}, :#{body.unitPrice})"/>
+                </split>
+                
+                <!-- Return success response -->
+                <setHeader name="CamelHttpResponseCode">
+                    <constant>201</constant>
+                </setHeader>
+                <setBody>
+                    <simple>{"message": "Order created successfully", "orderId": "${body.orderId}", "totalAmount": ${body.totalAmount}}</simple>
+                </setBody>
+                
+            </when>
+            <otherwise>
+                <setHeader name="CamelHttpResponseCode">
+                    <constant>400</constant>
+                </setHeader>
+                <setBody>
+                    <simple>{"error": "Invalid order: must have at least one item"}</simple>
+                </setBody>
+            </otherwise>
+        </choice>
     </route>
 
 </routes>

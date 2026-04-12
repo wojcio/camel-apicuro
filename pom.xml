@@ -41,6 +41,30 @@
             <artifactId>camel-xml-io-dsl</artifactId>
         </dependency>
 
+        <!-- Camel Bean -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-bean</artifactId>
+        </dependency>
+
+        <!-- Camel Rest -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-rest</artifactId>
+        </dependency>
+
+        <!-- Camel Direct -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-direct</artifactId>
+        </dependency>
+
+        <!-- Camel Timer -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-timer</artifactId>
+        </dependency>
+
         <!-- Camel Kafka -->
         <dependency>
             <groupId>org.apache.camel</groupId>

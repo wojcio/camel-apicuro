@@ -12,7 +12,7 @@ This project demonstrates a **Bookstore Event Streaming** system using Apache Ca
 - **Camel XML DSL**: Routes are defined in `src/main/resources/camel/`.
 - **JSON Schema Validation**: Uses Apicurio's JSON Schema Kafka SerDes.
 - **SQLite Database**: Persistent book catalog with sample data (`src/main/resources/db/`).
-- **REST API**: HTTP endpoints for managing books and orders (port 8081).
+- **REST API**: HTTP endpoints for managing books and orders (port 8082).
 - **Apache Kafka Integration**: Event streaming for books, orders, and shipments.
 - **Enterprise Integration Patterns (EIP)**:
   - Split-Aggregate for processing order items
@@ -89,7 +89,7 @@ Key configuration options in `src/main/resources/application.properties`:
 
 ```properties
 # HTTP Server (Netty API)
-http.port = 8081
+http.port = 8082
 
 # Kafka
 kafka.brokers = localhost:9092
@@ -127,18 +127,18 @@ sqlite.jdbc.url = jdbc:sqlite:bookstore.db
 
 ```bash
 # Get all books
-curl http://localhost:8081/api/books
+curl http://localhost:8082/api/books
 
 # Add a new book
-curl -X POST http://localhost:8081/api/books \
+curl -X POST http://localhost:8082/api/books \
   -H "Content-Type: application/json" \
   -d '{"isbn":"9781234567890","title":"New Book","author":"Author","genre":"Fiction","price":19.99,"stock":50}'
 
 # Get all orders
-curl http://localhost:8081/api/orders
+curl http://localhost:8082/api/orders
 
 # Create a new order
-curl -X POST http://localhost:8081/api/orders \
+curl -X POST http://localhost:8082/api/orders \
   -H "Content-Type: application/json" \
   -d '{
     "orderId": "ORD-NEW-001",

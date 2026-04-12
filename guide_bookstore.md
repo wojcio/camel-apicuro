@@ -122,8 +122,10 @@ Orders are split into individual items for processing, then re-aggregated:
     <simple>${body.payload.items}</simple>
     <!-- Process each item -->
 </split>
-<aggregate completionSize="2">
-    <!-- Reassemble order -->
+<aggregate aggregationStrategy="orderAggregationStrategy" completionSize="2">
+    <correlationExpression>
+        <simple>${header.orderId}</simple>
+    </correlationExpression>
 </aggregate>
 ```
 
@@ -132,7 +134,7 @@ Only process specific event types:
 
 ```xml
 <filter>
-    <method bean="orderFilter" method="isOrderCreated"/>
+    <method ref="orderFilter" method="isOrderCreated"/>
     <!-- Process only ORDER_CREATED events -->
 </filter>
 ```
@@ -141,7 +143,9 @@ Only process specific event types:
 Add book details from database to order items:
 
 ```xml
-<enrich uri="direct:get-book-details" strategyRef="itemAggregationStrategy"/>
+<enrich aggregationStrategy="itemAggregationStrategy">
+    <constant>direct:get-book-details</constant>
+</enrich>
 ```
 
 ### 4. Choice (Route) Pattern
@@ -226,18 +230,18 @@ The application uses Jackson for JSON serialization/deserialization:
 
 ```bash
 # Get all books
-curl http://localhost:8081/api/books
+curl http://localhost:8082/api/books
 
 # Add a new book
-curl -X POST http://localhost:8081/api/books \
+curl -X POST http://localhost:8082/api/books \
   -H "Content-Type: application/json" \
   -d '{"isbn":"9781234567890","title":"New Book","author":"Author","genre":"Fiction","price":19.99,"stock":50}'
 
 # Get all orders
-curl http://localhost:8081/api/orders
+curl http://localhost:8082/api/orders
 
 # Create a new order
-curl -X POST http://localhost:8081/api/orders \
+curl -X POST http://localhost:8082/api/orders \
   -H "Content-Type: application/json" \
   -d '{
     "orderId": "ORD-NEW-001",
@@ -267,7 +271,7 @@ This starts:
 mvn camel:run
 ```
 
-The REST API will be available on `http://localhost:8081`.
+The REST API will be available on `http://localhost:8082`.
 
 ### 3. Monitor Events
 
@@ -353,7 +357,7 @@ The SQLite database is automatically initialized on startup with:
 ┌─────────────┐
 │   REST API  │
 │ (Netty)     │
-│ port 8081   │
+│ port 8082   │
 └─────────────┘
          │
          ▼
