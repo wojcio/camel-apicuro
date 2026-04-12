@@ -26,3 +26,14 @@ services:
       - "8080:8080"
     depends_on:
       - kafka
+
+  kafbat:
+    image: docker.io/kafbat/kafka-ui
+    container_name: kafbat
+    ports:
+      - "8085:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=localhost:9092
+    depends_on:
+      - kafka
